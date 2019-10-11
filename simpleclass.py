@@ -50,19 +50,19 @@ def generateWordCloud(textframe):
 
 df = pd.read_csv('political.csv',header=0,usecols = ['message','message:confidence','text'],encoding = 'unicode_escape')
 df= df.loc[(df['message'] == 'support') | (df['message'] == 'attack')]
-df["textlength"]=df["text"].apply(len)
-df= df.loc[(df["textlength"]<300)]
-df['text'] = df['text'].str.encode('ascii', 'ignore').str.decode('ascii')
-pd.set_option('display.max_colwidth', -1)
+df["textlength"]=df["text"].apply(len) #adding a column for length of post
+df= df.loc[(df["textlength"]<300)] #removing posts that are too long
 
+#removing bad characters and changing from string to list
+df['text'] = df['text'].str.encode('ascii', 'ignore').str.decode('ascii')
+#pd.set_option('display.max_colwidth', -1)
 df['text']=df['text'].apply(remove_punctuations)
 df['text']=df['text'].apply(str.lower)
 df['text']=df['text'].apply(str.split)
-
 df['text']=df['text'].apply(remove_stopwords)
 #print(df['text'])
 
-generateWordCloud(df['text'])
+#generateWordCloud(df['text'])
 # print(count)
 # objects = ("@",'http')
 # y_pos = np.arange(len(objects))

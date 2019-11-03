@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 #import matplotlib.pyplot as plt; plt.rcdefaults()
 from wordcloud import WordCloud
+import operator
+from nltk.corpus import stopwords
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 def remove_punctuations(text):
     if "http" in text:
@@ -15,25 +18,8 @@ def remove_punctuations(text):
     return text
 
 def remove_stopwords(textlist):
-    stopwords=["a", "about", "above", "after", "afterwards", "again", "all", "almost", "alone", "along", "already", "also", "although", "am", "among",
-    "amongst", "amoungst", "amount",  "an", "and", "anyhow", "anyone", "anything", "anyway", "anywhere", "are", "around", "as",  "at", "back", "be",
-    "became", "because", "become", "becomes", "becoming", "been", "before", "beforehand", "behind", "being", "below", "beside", "besides", "between",
-    "beyond", "both", "bottom","but", "by", "call", "can", "cannot", "cant", "co", "con", "could", "couldnt", "cry", "de", "describe", "detail", "do",
-    "done", "down", "due", "during", "each", "eg", "eight", "either", "else", "elsewhere", "empty", "enough", "etc", "even", "ever", "every", "everyone",
-    "everything", "everywhere", "except", "fify", "fill", "find", "fire", "former", "formerly", "found", "from", "front", "further", "get", "give", "go",
-    "had", "has", "hasnt", "have", "hence", "here", "hereafter", "hereby", "herein", "hereupon", "hers", "herself", "him", "himself", "his", "how",
-    "however", "ie", "if", "in", "indeed", "interest", "into", "is", "it", "its", "itself", "keep", "last", "latter", "latterly", "least", "less", "ltd",
-    "made", "many", "may", "me", "meanwhile", "might", "mill", "mine", "more", "moreover", "most", "mostly", "move", "much", "must", "my", "myself",
-    "name", "namely", "neither", "never", "nevertheless", "next", "nobody", "none", "noone", "nor", "not", "nothing", "now", "nowhere", "of", "off",
-    "often", "on", "once", "one", "only", "onto", "or", "other", "others", "otherwise", "our", "ours", "ourselves", "out", "over", "own", "part", "per",
-    "perhaps", "please", "put", "rather", "re", "same", "see", "seem", "seemed", "seeming", "seems", "several", "should", "side", "since", "so", "some",
-    "somehow", "someone", "something", "sometime", "sometimes", "somewhere", "still", "such", "take", "than", "that", "the", "their", "them", "themselves",
-    "then", "thence", "there", "thereafter", "thereby", "therefore", "therein", "thereupon", "these", "they", "thick", "thin", "this", "those", "though",
-    "three", "through", "throughout", "thru", "thus", "to", "together", "too", "twelve", "twenty", "two", "un", "under", "until", "up", "upon", "us",
-    "very", "via", "was", "we", "well", "were", "what", "whatever", "when", "whence", "whenever", "where", "whereafter", "whereas", "whereby", "wherein",
-    "whereupon", "wherever", "whether", "which", "while", "whither", "who", "whoever", "whom", "whose", "why", "will", "with", "within", "without",
-    "would", "yet", "you", "your", "yours", "yourself", "yourselves", 'i', 'im', 'amp']
-    filtered_list = [value for value in textlist if value not in stopwords]
+    stop_words = list(set(stopwords.words('english')))
+    filtered_list = [value for value in textlist if value not in stop_words]
     return filtered_list
 
 def generateWordCloud(textframe):
@@ -48,19 +34,60 @@ def generateWordCloud(textframe):
     path="C:\\Users\\nila9\\Desktop\\UConn\\cloud_attack.png"
     plt.savefig(path)
 
+def getSentiment(text):
+    sid = SentimentIntensityAnalyzer()
+    score=sid.polarity_scores(text)
+    return score['compound']
+
 df = pd.read_csv('political.csv',header=0,usecols = ['message','message:confidence','text'],encoding = 'unicode_escape')
-df= df.loc[(df['message'] == 'support') | (df['message'] == 'attack')]
+df= df.loc[(df['message'] == 'attack') | (df['message'] == 'support')]
 df["textlength"]=df["text"].apply(len) #adding a column for length of post
-df= df.loc[(df["textlength"]<300)] #removing posts that are too long
+df= df.loc[(df["textlength"]<280)] #removing posts that are too long
 
 #removing bad characters and changing from string to list
 df['text'] = df['text'].str.encode('ascii', 'ignore').str.decode('ascii')
-#pd.set_option('display.max_colwidth', -1)
-df['text']=df['text'].apply(remove_punctuations)
-df['text']=df['text'].apply(str.lower)
-df['text']=df['text'].apply(str.split)
-df['text']=df['text'].apply(remove_stopwords)
-#print(df['text'])
+df['sentiment']=df['text'].apply(getSentiment)
+pd.set_option('display.max_colwidth', -1)
+# df['text']=df['text'].apply(remove_punctuations)
+# df['text']=df['text'].apply(str.lower)
+# df['text']=df['text'].apply(str.split)
+# df['text']=df['text'].apply(remove_stopwords)
+
+# plt.hist(df['sentiment'], bins=50)
+# plt.gca().set(title='Frequency Histogram, all', ylabel='Frequency');
+# path="C:\\Users\\nila9\\Desktop\\UConn\\sentiments_all.png"
+# plt.savefig(path)
+df= df.loc[(df['sentiment'] != 0.0)]
+print("overall sentiment scores mean and std dev:")
+print(df['sentiment'].mean())
+print(df['sentiment'].std())
+dfs=df.loc[(df['message'] == 'support')]
+print("support sentiment scores mean and std dev:")
+print(dfs['sentiment'].mean())
+print(dfs['sentiment'].std())
+# plt.hist(dfs['sentiment'], bins=50)
+# plt.gca().set(title='Frequency Histogram, support', ylabel='Frequency');
+# path="C:\\Users\\nila9\\Desktop\\UConn\\sentiments_support.png"
+# plt.savefig(path)
+dfa=df.loc[(df['message'] == 'attack')]
+print("attack sentiment scores mean and std dev:")
+print(dfa['sentiment'].mean())
+print(dfa['sentiment'].std())
+# plt.hist(dfa['sentiment'], bins=50)
+# plt.gca().set(title='Frequency Histogram, attack', ylabel='Frequency');
+# path="C:\\Users\\nila9\\Desktop\\UConn\\sentiments_attack.png"
+# plt.savefig(path)
+
+# biglist=[]
+# for x in df['text']:
+#     biglist= biglist+x
+# #print(biglist)
+# dist= nltk.FreqDist(biglist)
+#
+# filtered_word_freq = dict((word, freq) for word, freq in dist.items() if not word.isdigit())
+# sorted_x = sorted(filtered_word_freq.items(), key=operator.itemgetter(1))
+# print(len(sorted_x))
+# print(len(df))
 
 #generateWordCloud(df['text'])
 # print(count)

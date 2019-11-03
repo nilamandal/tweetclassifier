@@ -1,0 +1,85 @@
+Project notes:
+Cookbook step 1:
+
+total number of posts: 915
+number of attack posts: 148
+number of support posts: 767
+
+total occurances of @ symbol: 298
+occurances of @ symbols in attack posts: 40
+occurances of @ symbols in support posts: 258
+
+number of links total: 430
+number of links in attack posts: 83
+number of links in support posts: 347
+
+
+Cookbook step 4: Compute/Plot descriptive statistics
+
+total unique words: 4878
+most common unique words over all:
+('help', 41)
+('bill', 41)
+('president', 43)
+('obamacare', 44)
+('new', 44)
+('obama', 44)
+('rt', 44)
+('thanks', 44)
+('house', 57), 
+('great', 70)
+
+unique words in attack posts:1116
+most common:
+('no', 8), 
+('budget', 8), 
+('federal', 8), 
+('dont', 8), 
+('congress', 9), 
+('jobs', 10), 
+('house', 12), 
+('president', 21), 
+('obamacare', 23), 
+('obama', 28)
+
+unique words in support posts: 4312
+most common:
+('act', 34), 
+('thank', 34), 
+('new', 36), 
+('bill', 36), 
+('rt', 36), 
+('support', 37), 
+('help', 40), 
+('thanks', 43), 
+('house', 45), 
+('great', 70)
+
+
+Re: Sentiment scores:
+Range of values: (-1,1)
+overall sentiment scores mean and std dev:
+0.2725026607538805
+0.45212771153743986
+support sentiment scores mean and std dev:
+0.34334529801324526
+0.43158081983119223
+attack sentiment scores mean and std dev:
+-0.09134897959183673
+0.3746253652609456
+
+Many of the tweets received sentiment scores of 0. Reading about sentiment scores it seems like text with a more
+professional tone, often receives scores of 0, so this is probably the reason for that.
+
+if we leave out tweets with sentiment score == 0's,
+overall sentiment scores mean and std dev:
+0.3362481532147746
+0.4804584909942819
+support sentiment scores mean and std dev:
+0.41878142164781934
+0.4422774413276815
+attack sentiment scores mean and std dev:
+-0.11989553571428571
+0.42560943340075347
+
+These are really only slightly positive and barely negative.

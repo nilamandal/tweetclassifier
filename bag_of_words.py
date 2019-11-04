@@ -110,7 +110,7 @@ def generate_tfidf(tweet_text): #requires snowball to already be done
 
 tweet_df = load_data()
 tfidf_df=generate_tfidf(tweet_df['text'])
-
+print(len(tweet_df['text']))
 
 
 # biglist=[]

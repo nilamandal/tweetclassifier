@@ -1,9 +1,9 @@
 Project notes:
 Cookbook step 1:
 
-total number of posts: 915
-number of attack posts: 148
-number of support posts: 767
+total number of posts: 902
+number of attack posts: 147
+number of support posts: 755
 
 total occurances of @ symbol: 298
 occurances of @ symbols in attack posts: 40

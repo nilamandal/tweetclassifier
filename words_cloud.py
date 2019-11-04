@@ -24,8 +24,8 @@ def load_data():
     preprocessed_tweets_text = []
     print("Check before filter political data")
     print(data.shape)
-    # Remove text that's more than 300 characters
-    data = data[data.text.apply(lambda x: len(str(x))<300)]
+    # Remove text that's more than 280 characters
+    data = data[data.text.apply(lambda x: len(str(x))<280)]
     # Get only rows that has (political or attack)
     data = filter_support_vs_attack(data)
     # preprocess text of tweets

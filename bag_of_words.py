@@ -94,24 +94,34 @@ def generate_tfidf(tweet_text): #requires snowball to already be done
     cvec.fit(tweet_df.text)
     ngrams=list(islice(cvec.vocabulary_.items(), None))
     #ngramsdisplay=list(islice(cvec.vocabulary_.items(), 100))
-    #print(ngrams)
+    #print(len(ngrams))
     cvec_counts = cvec.transform(tweet_text)
+    #print(cvec_counts)
     # print( 'sparse matrix shape:', cvec_counts.shape)
     # print( 'nonzero count:', cvec_counts.nnz)
     # print('sparsity: %.2f%%' % (100.0 * cvec_counts.nnz / (cvec_counts.shape[0] * cvec_counts.shape[1])))
     occ = np.asarray(cvec_counts.sum(axis=0)).ravel().tolist()
     counts_df = pd.DataFrame({'term': cvec.get_feature_names(), 'occurrences': occ})
-    # cc= counts_df.sort_values(by='occurrences', ascending=False).head(20)
+    #cc= counts_df.sort_values(by='occurrences', ascending=False).head(20)
+    #print(cc)
     transformer = TfidfTransformer()
     transformed_weights = transformer.fit_transform(cvec_counts)
+    print(transformed_weights) #this is the actual vectors we want
+    print(transformed_weights.shape)
     weights = np.asarray(transformed_weights.mean(axis=0)).ravel().tolist()
     tfidf_df = pd.DataFrame({'term': cvec.get_feature_names(), 'weight': weights})
+    tfidf_df['occurences']= counts_df['occurrences']
     return tfidf_df
 
 tweet_df = load_data()
+pd.set_option('display.max_colwidth', -1)
+#print(tweet_df['text'])
 tfidf_df=generate_tfidf(tweet_df['text'])
-print(len(tweet_df['text']))
-
+cc= tfidf_df.sort_values(by='weight', ascending=False)
+#print(cc)
+#tfidfconverter = TfidfVectorizer(max_features=2000, min_df=5, max_df=100, stop_words=stopwords.words('english'))
+#X = tfidfconverter.fit_transform(processed_tweets).toarray()
+#tweet_df["tfidf"]=tweet_df["text"].apply(len)
 
 # biglist=[]
 # for x in tweet_df['text']:

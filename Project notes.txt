@@ -83,3 +83,18 @@ attack sentiment scores mean and std dev:
 0.42560943340075347
 
 These are really only slightly positive and barely negative.
+
+
+Ideas from other people's midterm presentations:
+--lemmatization (replacement for stemming)
+--using an api to pull titles out of links
+
+--what do we consider "metadata"?
+
+--nltk has a PCA method/module built in
+
+--word2vec and doc2vec
+
+--Re (regular expressions)
+
+--Latent dirichlet allocation 

@@ -1,6 +1,6 @@
 import re
 import string
-import nltk 
+import nltk
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -21,11 +21,11 @@ def load_data():
     print("Check before filter political data")
     print(data.shape)
     # Remove text that's more than 300 characters
-    data = data[data.text.apply(lambda x: len(str(x))<300)]
+    data = data[data.text.apply(lambda x: len(str(x))<280)]
     # Get only rows that has (political or attack)
     data = filter_support_vs_attack(data)
     # get mentions of tweets
-    
+
     type_list = []
     users_list = []
     number_of_mentions_list = []
@@ -49,21 +49,21 @@ def load_data():
         number_of_urls_list.append(number_of_urls)
 
 
-    statistics_df = DataFrame({"type":type_list, 
+    statistics_df = DataFrame({"type":type_list,
                     "users":users_list,
                     "number_of_mentions":number_of_mentions_list,
                     "hashtags":hashtags_list,
                     "number_of_hashtags":number_of_hashtags_list,
                     "urls":urls_list,
-                    "number_of_urls":number_of_urls_list})  
-         
+                    "number_of_urls":number_of_urls_list})
+
     return statistics_df
 
 
 def get_mentions(text):
     mentions = re.findall("(^|[^@\w])@(\w{1,15})", text)
     mentions = [user_name for rubbish, user_name in mentions]
-    
+
     return ','.join(mentions) , len(mentions)
 
 def get_hashtags(text):

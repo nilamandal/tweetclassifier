@@ -97,17 +97,17 @@ def generate_tfidf(tweet_text): #requires snowball to already be done
     #print(len(ngrams))
     cvec_counts = cvec.transform(tweet_text)
     #print(cvec_counts)
-    # print( 'sparse matrix shape:', cvec_counts.shape)
-    # print( 'nonzero count:', cvec_counts.nnz)
-    # print('sparsity: %.2f%%' % (100.0 * cvec_counts.nnz / (cvec_counts.shape[0] * cvec_counts.shape[1])))
+    print( 'sparse matrix shape:', cvec_counts.shape)
+    print( 'nonzero count:', cvec_counts.nnz)
+    print('sparsity: %.2f%%' % (100.0 * cvec_counts.nnz / (cvec_counts.shape[0] * cvec_counts.shape[1])))
     occ = np.asarray(cvec_counts.sum(axis=0)).ravel().tolist()
     counts_df = pd.DataFrame({'term': cvec.get_feature_names(), 'occurrences': occ})
     #cc= counts_df.sort_values(by='occurrences', ascending=False).head(20)
     #print(cc)
     transformer = TfidfTransformer()
     transformed_weights = transformer.fit_transform(cvec_counts)
-    print(transformed_weights) #this is the actual vectors we want
-    print(transformed_weights.shape)
+    #print(transformed_weights) #this is the actual vectors we want
+    #print(transformed_weights.shape)
     weights = np.asarray(transformed_weights.mean(axis=0)).ravel().tolist()
     tfidf_df = pd.DataFrame({'term': cvec.get_feature_names(), 'weight': weights})
     tfidf_df['occurences']= counts_df['occurrences']

@@ -114,10 +114,13 @@ def generate_tfidf(tweet_text): #requires snowball to already be done
     return tfidf_df
 
 tweet_df = load_data()
+
+
 pd.set_option('display.max_colwidth', -1)
-#print(tweet_df['text'])
-tfidf_df=generate_tfidf(tweet_df['text'])
-cc= tfidf_df.sort_values(by='weight', ascending=False)
+print(tweet_df)
+
+#tfidf_df=generate_tfidf(tweet_df['text'])
+#cc= tfidf_df.sort_values(by='weight', ascending=False)
 #print(cc)
 #tfidfconverter = TfidfVectorizer(max_features=2000, min_df=5, max_df=100, stop_words=stopwords.words('english'))
 #X = tfidfconverter.fit_transform(processed_tweets).toarray()

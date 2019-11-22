@@ -98,3 +98,12 @@ Ideas from other people's midterm presentations:
 --Re (regular expressions)
 
 --Latent dirichlet allocation 
+
+
+
+Classifiers to try:
+naive bayes
+xgboost
+svm
+logistic regression
+

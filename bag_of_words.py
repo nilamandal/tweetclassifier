@@ -19,6 +19,11 @@ from nltk.stem.snowball import SnowballStemmer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from itertools import islice
+from sklearn.cluster import KMeans
+from time import time
+from sklearn import metrics
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import scale
 
 def load_data():
     #read data
@@ -111,27 +116,50 @@ def generate_tfidf(tweet_text): #requires snowball to already be done
     weights = np.asarray(transformed_weights.mean(axis=0)).ravel().tolist()
     tfidf_df = pd.DataFrame({'term': cvec.get_feature_names(), 'weight': weights})
     tfidf_df['occurences']= counts_df['occurrences']
-    return tfidf_df
+    return tfidf_df, transformed_weights
+
+def bench_k_means(estimator, name, data):
+    t0 = time()
+    estimator.fit(data)
+    print('%-9s\t%.2fs\t%i\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f'
+          % (name, (time() - t0), estimator.inertia_,
+             metrics.homogeneity_score(labels, estimator.labels_),
+             metrics.completeness_score(labels, estimator.labels_),
+             metrics.v_measure_score(labels, estimator.labels_),
+             metrics.adjusted_rand_score(labels, estimator.labels_),
+             metrics.adjusted_mutual_info_score(labels,  estimator.labels_,
+                                                average_method='arithmetic'),
+             metrics.silhouette_score(data, estimator.labels_,
+                                      metric='euclidean',
+                                      sample_size=sample_size)))
+
 
 tweet_df = load_data()
-
-
 pd.set_option('display.max_colwidth', -1)
-print(tweet_df)
+tfidf_df,bag_tfidf=generate_tfidf(tweet_df['text'])
+#print(bag_tfidf)
 
-#tfidf_df=generate_tfidf(tweet_df['text'])
+n_samples, n_features = bag_tfidf.shape
+# n_digits = len(np.unique(digits.target))
+n_clusters= 2
+labels = tweet_df['message']
+sample_size = 300
+print("n_clusters: %d, \t n_samples %d, \t n_features %d"
+      % (n_clusters, n_samples, n_features))
+
+print(82 * '_')
+print('init\t\ttime\tinertia\thomo\tcompl\tv-meas\tARI\tAMI\tsilhouette')
+
+bench_k_means(KMeans(init='k-means++', n_clusters=n_clusters, n_init=10),
+              name="k-means++", data=bag_tfidf)
 #cc= tfidf_df.sort_values(by='weight', ascending=False)
 #print(cc)
 #tfidfconverter = TfidfVectorizer(max_features=2000, min_df=5, max_df=100, stop_words=stopwords.words('english'))
 #X = tfidfconverter.fit_transform(processed_tweets).toarray()
 #tweet_df["tfidf"]=tweet_df["text"].apply(len)
 
-# biglist=[]
-# for x in tweet_df['text']:
-#     biglist= biglist+x
-#
-# dist= nltk.FreqDist(biglist)
-# filtered_word_freq = dict((word, freq) for word, freq in dist.items() if not word.isdigit())
-# sorted_x = sorted(filtered_word_freq.items(), key=operator.itemgetter(1))
-# print(sorted_x)
-# print(len(sorted_x))
+pca = PCA(n_components=n_clusters).fit(bag_tfidf)
+bench_k_means(KMeans(init=pca.components_, n_clusters=n_clusters, n_init=1),
+              name="PCA-based",
+              data=bag_tfidf)
+print(82 * '_')

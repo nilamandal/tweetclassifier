@@ -54,10 +54,10 @@ def preprocess_tweet(text):
     nopunc = word_tokenize(nopunc)
     # remove stopwords from final word list
     word_list = [word for word in nopunc if word not in stopwords.words('english')]
-    sentence = ' '.join(word_list) 
     #stem the words
-    lancaster=LancasterStemmer()
-    lancaster.stem(sentence)
+    stemmer = SnowballStemmer('english')
+    tokens_stemmed = [stemmer.stem(x) for x in word_list]
+    sentence = ' '.join(tokens_stemmed) 
     return sentence
 
 def filter_support_vs_attack(dataframe):

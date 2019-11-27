@@ -20,6 +20,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from itertools import islice
 from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN
 from time import time
 from sklearn import metrics
 from sklearn.decomposition import PCA
@@ -28,7 +29,7 @@ from sklearn.manifold import TSNE
 
 def load_data():
     #read data
-    data = pd.read_csv('files/political_media.csv',header=0,usecols = ['message','message:confidence','text'],encoding = 'unicode_escape')
+    data = pd.read_csv('political.csv',header=0,usecols = ['message','message:confidence','text'],encoding = 'unicode_escape')
     preprocessed_tweets_text = []
     data["textlength"]=data["text"].apply(len) #adding a column for length of post
     data= data.loc[(data["textlength"]<280)] #removing posts that are too long
@@ -126,24 +127,30 @@ def generate_tf_idf(tweet_text):
 
     return tf_idf_matrix
 
-def cluster_tweets(tf_idf_matrix):
+def build_dbscan_cluster_model():
+    clustering_model = DBSCAN(eps=2,metric='euclidean', min_samples=10)
+    return clustering_model
+
+def build_k_means_cluster_model():
     num_clusters = 2
     num_seeds = 10
     # default value in SKILEARN
     max_iterations = 300 
-    labels_color_map = {
-        0: '#20b2aa', 1: '#ff7373'
-    }
-    pca_num_components = 2
-    tsne_num_components = 2
-
-    # create k-means model with custom config
+     # create k-means model with custom config
     clustering_model = KMeans(
         n_clusters=num_clusters,
         max_iter=max_iterations,
         precompute_distances="auto",
         n_jobs=-1
     )
+    return clustering_model
+
+def cluster_tweets(tf_idf_matrix, clustering_model):
+    labels_color_map = {
+        0: '#20b2aa', 1: '#ff7373'
+    }
+    pca_num_components = 2
+    tsne_num_components = 2
 
     labels = clustering_model.fit_predict(tf_idf_matrix)
      
@@ -180,5 +187,9 @@ def cluster_tweets(tf_idf_matrix):
 tweet_df = load_data()
 pd.set_option('display.max_colwidth', -1)
 tf_idf_matrix = generate_tf_idf(tweet_df['text'])
-cluster_tweets(tf_idf_matrix)
+#clustering_model = build_k_means_cluster_model()
+#cluster_tweets(tf_idf_matrix, clustering_model)
+
+clustering_model = build_dbscan_cluster_model()
+cluster_tweets(tf_idf_matrix, clustering_model)
 

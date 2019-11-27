@@ -158,7 +158,7 @@ bench_k_means(KMeans(init='k-means++', n_clusters=n_clusters, n_init=10),
 #X = tfidfconverter.fit_transform(processed_tweets).toarray()
 #tweet_df["tfidf"]=tweet_df["text"].apply(len)
 
-pca = PCA(n_components=n_clusters).fit(bag_tfidf)
+pca = PCA(n_components=n_clusters).fit(bag_tfidf.todense())
 bench_k_means(KMeans(init=pca.components_, n_clusters=n_clusters, n_init=1),
               name="PCA-based",
               data=bag_tfidf)

@@ -27,12 +27,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-from xgboost import 
+from sklearn.neural_network import MLPClassifier
+import xgboost as xgb
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import roc_curve
-from sklearn.metrics import precision_recall_curve 
+from sklearn.metrics import precision_recall_curve
+
+universal_test_size=0.7
 
 def load_data():
     #read data
@@ -91,7 +94,7 @@ def generate_bag_of_words(tweets_text):
     print(vectorizer.vocabulary_ )
     filtered_word_freq = dict((word, freq) for word, freq in vectorizer.vocabulary_.items() if not word.isdigit())
     sorted_x = sorted(filtered_word_freq.items(), key=operator.itemgetter(1))
-    print(sorted_x) 
+    print(sorted_x)
 
 def plot_data(model, vector_test_X, y_test, predictions):
     print("Accuracy score:" , accuracy_score(y_test, predictions))
@@ -112,7 +115,7 @@ def plot_data(model, vector_test_X, y_test, predictions):
     _ = plt.ylim([0, 1.02])
     _ = plt.legend(loc="lower right")
     plt.show()
-    
+
     precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob, pos_label='support')
     # create plot
     plt.plot(precision, recall, label='Precision-recall curve')
@@ -125,13 +128,17 @@ def plot_data(model, vector_test_X, y_test, predictions):
 def classify_Xgboost(tweets_df):
     # calculate tf-idf of texts
     tf_idf_vectorizer = TfidfVectorizer(stop_words='english', analyzer="word",  min_df=5, use_idf=True, smooth_idf=True, ngram_range=(1, 2))
-    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=0.73, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=universal_test_size, random_state=42)
     tf_idf_vectorizer.fit(X_train)
+    print("method: xgboost")
+    print("train set size:",len(y_train))
+    print("test set size:",len(y_test))
     vector_train_X = tf_idf_vectorizer.transform(X_train)
     vector_test_X = tf_idf_vectorizer.transform(X_test)
     xgboost=xgb.XGBClassifier(random_state=1,learning_rate=0.01)
     xgboost.fit(vector_train_X, y_train)
     predictions = xgboost.predict(vector_test_X)
+    confusion_matrix(y_test,predictions)
     plot_data(xgboost, vector_test_X, y_test, predictions)
 
 
@@ -139,49 +146,102 @@ def classify_Xgboost(tweets_df):
 def classify_SVM(tweets_df):
     # calculate tf-idf of texts
     tf_idf_vectorizer = TfidfVectorizer(stop_words='english', analyzer="word",  min_df=5, use_idf=True, smooth_idf=True, ngram_range=(1, 2))
-    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=0.73, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=universal_test_size, random_state=42)
     tf_idf_vectorizer.fit(X_train)
+    print("method: svm")
+    print("train set size:",len(y_train))
+    print("test set size:",len(y_test))
     vector_train_X = tf_idf_vectorizer.transform(X_train)
     vector_test_X = tf_idf_vectorizer.transform(X_test)
     SVC_classifier = SVC(probability=True)
     SVC_classifier.fit(vector_train_X, y_train)
     predictions = SVC_classifier.predict(vector_test_X)
+    confusion_matrix(y_test,predictions)
     plot_data(SVC_classifier, vector_test_X, y_test, predictions)
 
 
 def classify_logistic_regression(tweets_df):
     # calculate tf-idf of texts
     tf_idf_vectorizer = TfidfVectorizer(stop_words='english', analyzer="word",  min_df=5, use_idf=True, smooth_idf=True, ngram_range=(1, 2))
-    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=0.73, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=universal_test_size, random_state=42)
     tf_idf_vectorizer.fit(X_train)
+    print("method: logistic regression")
+    print("train set size:",len(y_train))
+    print("test set size:",len(y_test))
     vector_train_X = tf_idf_vectorizer.transform(X_train)
     vector_test_X = tf_idf_vectorizer.transform(X_test)
     logreg = LogisticRegression()
     logreg.fit(vector_train_X, y_train)
     predictions = logreg.predict(vector_test_X)
+    confusion_matrix(y_test,predictions)
     plot_data(logreg, vector_test_X, y_test, predictions)
 
 def classify_naive_bayes(tweets_df):
      # calculate tf-idf of texts
     tf_idf_vectorizer = TfidfVectorizer(stop_words='english', analyzer="word",  min_df=5, use_idf=True, smooth_idf=True, ngram_range=(1, 2))
-    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=0.73, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=universal_test_size, random_state=42)
     tf_idf_vectorizer.fit(X_train)
     vector_train_X = tf_idf_vectorizer.transform(X_train)
     vector_test_X = tf_idf_vectorizer.transform(X_test)
-    
+    print("method: naive bayes")
+    print("train set size:",len(y_train))
+    print("test set size:",len(y_test))
     naive_bayes = MultinomialNB()
     naive_bayes.fit(vector_train_X, y_train)
     predictions = naive_bayes.predict(vector_test_X)
-    
+    confusion_matrix(y_test,predictions)
     plot_data(naive_bayes, vector_test_X, y_test, predictions)
-   
 
+def classify_MLP(tweets_df):
+    tf_idf_vectorizer = TfidfVectorizer(stop_words='english', analyzer="word",  min_df=5, use_idf=True, smooth_idf=True, ngram_range=(1, 2))
+    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=universal_test_size, random_state=42)
+    tf_idf_vectorizer.fit(X_train)
+    vector_train_X = tf_idf_vectorizer.transform(X_train)
+    vector_test_X = tf_idf_vectorizer.transform(X_test)
+    print("method: MLP")
+    print("train set size:",len(y_train))
+    print("test set size:",len(y_test))
+    mlp=MLPClassifier(alpha=1, max_iter=1000)
+    mlp.fit(vector_train_X, y_train)
+    predictions=mlp.predict(vector_test_X)
+    confusion_matrix(y_test,predictions)
+    plot_data(mlp, vector_test_X, y_test, predictions)
+
+def confusion_matrix(true_vals, pred_vals):
+    #truesupport, falsesupport, trueattack, falseattack
+    #print(len(pred_vals))
+    ts=0
+    fs=0
+    ta=0
+    fa=0
+    index=0
+    s=0
+    a=0
+    for x in true_vals:
+        y=pred_vals[index]
+        if x=='support':
+            s+=1
+        if x=='attack':
+            a+=1
+        if x=='support' and y=='support':
+            ts+=1
+        elif x=='support' and y=='attack':
+            fa+=1
+        elif x=='attack' and y=='attack':
+            ta+=1
+        else:
+            fs+=1
+        index+=1
+    print("True amount of support, attack:",s,a)
+    print("true support:",ts)
+    print("false support:",fs)
+    print("true attack:",ta)
+    print('false attack:',fa)
 
 tweet_df = load_data()
 
 #classify_naive_bayes(tweet_df)
 #classify_logistic_regression(tweet_df)
 #classify_SVM(tweet_df)
-classify_Xgboost(tweet_df)
-
-
+#classify_Xgboost(tweet_df)
+classify_MLP(tweet_df)

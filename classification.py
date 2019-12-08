@@ -50,6 +50,22 @@ def load_data():
     data['text']=data['text'].apply(preprocess_tweet)
     return data
 
+def get_balanced_tweets(tweets_df):
+    support_tweets = tweets_df[tweets_df.message.isin(['support'])]
+    attack_tweets =  tweets_df[tweets_df.message.isin(['attack'])]
+
+    training_support_tweets = support_tweets.iloc[300:400, :]
+    training_attack_tweets = attack_tweets.iloc[0:100, :]
+
+    testing_support_tweets = support_tweets.iloc[0:47, :]
+    testing_attack_tweets = attack_tweets.iloc[100:147, :]
+
+    balanced_training_tweets = training_attack_tweets.append(training_support_tweets)
+    balanced_testing_tweets = testing_attack_tweets.append(testing_support_tweets)
+
+     
+    return balanced_training_tweets, balanced_testing_tweets
+
 def preprocess_tweet(text):
 
     # Check characters to see if they are in punctuation
@@ -176,20 +192,23 @@ def classify_logistic_regression(tweets_df):
     confusion_matrix(y_test,predictions)
     plot_data(logreg, vector_test_X, y_test, predictions)
 
-def classify_naive_bayes(tweets_df):
+def classify_naive_bayes(tweets_df, train=None, test=None):
      # calculate tf-idf of texts
     tf_idf_vectorizer = TfidfVectorizer(stop_words='english', analyzer="word",  min_df=5, use_idf=True, smooth_idf=True, ngram_range=(1, 2))
-    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweet_df['message'], test_size=universal_test_size, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(tweets_df['text'], tweets_df['message'], test_size=0.25, random_state=42)
+    if train is not None and test is not None:
+        X_train= train['text']
+        X_test = test['text']
+        y_train = train['message']
+        y_test = test['message']
     tf_idf_vectorizer.fit(X_train)
     vector_train_X = tf_idf_vectorizer.transform(X_train)
     vector_test_X = tf_idf_vectorizer.transform(X_test)
-    print("method: naive bayes")
-    print("train set size:",len(y_train))
-    print("test set size:",len(y_test))
+    
     naive_bayes = MultinomialNB()
     naive_bayes.fit(vector_train_X, y_train)
     predictions = naive_bayes.predict(vector_test_X)
-    confusion_matrix(y_test,predictions)
+    
     plot_data(naive_bayes, vector_test_X, y_test, predictions)
 
 def classify_MLP(tweets_df):
@@ -240,8 +259,10 @@ def confusion_matrix(true_vals, pred_vals):
 
 tweet_df = load_data()
 
-#classify_naive_bayes(tweet_df)
-#classify_logistic_regression(tweet_df)
-#classify_SVM(tweet_df)
-#classify_Xgboost(tweet_df)
+balanced_training_df, balanced_testing_df = get_balanced_tweets(tweeter_df)
+balanced_df = balanced_training_df.append(balanced_testing_df)
+classify_naive_bayes(balanced_df, train=balanced_training_df, test=balanced_testing_df)
+classify_logistic_regression(tweet_df)
+classify_SVM(tweet_df)
+classify_Xgboost(tweet_df)
 classify_MLP(tweet_df)
